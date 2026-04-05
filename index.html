@@ -1,1 +1,209 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escalas 1:1, 2:1, 1:2</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f4f4f4;
+  }
+
+  h2 {
+    margin-top: 20px;
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+
+  .box {
+    text-align: center;
+  }
+
+  #model, #square {
+    background: #4CAF50;
+    margin: auto;
+  }
+
+  #model {
+    background: #888;
+  }
+
+  #square {
+    resize: both;
+    overflow: auto;
+    min-width: 40px;
+    min-height: 40px;
+    max-width: 400px;
+    max-height: 400px;
+  }
+
+  button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  #feedback {
+    font-weight: bold;
+    margin-top: 10px;
+  }
+</style>
+
+</head>
+<body>
+
+<h2 id="title">Nivel 1</h2>
+
+<div class="container">
+
+  <!-- MODELO -->
+  <div class="box">
+    <p><b>Modelo</b></p>
+    <div id="model"></div>
+    <p id="modelSize"></p>
+  </div>
+
+  <!-- ALUMNO -->
+  <div class="box">
+    <p><b>Tu figura</b></p>
+    <div id="square"></div>
+    <p id="sizeText"></p>
+  </div>
+
+</div>
+
+<br>
+
+<button onclick="checkAnswer()">✔ Comprobar</button>
+<button onclick="reset()">🔄 Reiniciar</button>
+
+<p id="feedback"></p>
+
+<script>
+
+const levels = [
+  {w:2,h:2,type:"1:1"},
+  {w:2,h:2,type:"2:1"},
+  {w:2,h:2,type:"1:2"},
+  {w:2,h:3,type:"2:1"},
+  {w:3,h:2,type:"1:2"}
+];
+
+let level = 0;
+
+const square = document.getElementById("square");
+const model = document.getElementById("model");
+const sizeText = document.getElementById("sizeText");
+const modelSize = document.getElementById("modelSize");
+const feedback = document.getElementById("feedback");
+const title = document.getElementById("title");
+
+function loadLevel() {
+  const l = levels[level];
+
+  const unit = 50;
+
+  model.style.width = (l.w * unit) + "px";
+  model.style.height = (l.h * unit) + "px";
+
+  square.style.width = (l.w * unit) + "px";
+  square.style.height = (l.h * unit) + "px";
+
+  modelSize.innerText = l.w + " × " + l.h;
+  sizeText.innerText = l.w + " × " + l.h;
+
+  title.innerText = "Nivel " + (level+1) + " → " + getText(l.type);
+
+  feedback.innerText = "";
+}
+
+function getText(type){
+  if(type==="1:1") return "Hazlo igual";
+  if(type==="2:1") return "Hazlo el doble";
+  if(type==="1:2") return "Hazlo la mitad";
+}
+
+function updateSize() {
+  const l = levels[level];
+  const unit = 50;
+
+  const w = square.offsetWidth;
+  const h = square.offsetHeight;
+
+  const scaleW = (w / (l.w*unit)) * l.w;
+  const scaleH = (h / (l.h*unit)) * l.h;
+
+  sizeText.innerText = scaleW.toFixed(1) + " × " + scaleH.toFixed(1);
+}
+
+setInterval(updateSize, 100);
+
+function checkAnswer() {
+  const l = levels[level];
+  const unit = 50;
+
+  const w = square.offsetWidth;
+  const h = square.offsetHeight;
+
+  const scaleW = (w / (l.w*unit)) * l.w;
+  const scaleH = (h / (l.h*unit)) * l.h;
+
+  let targetW = l.w;
+  let targetH = l.h;
+
+  if(l.type==="2:1"){
+    targetW = l.w * 2;
+    targetH = l.h * 2;
+  }
+
+  if(l.type==="1:2"){
+    targetW = l.w / 2;
+    targetH = l.h / 2;
+  }
+
+  const tol = 0.3;
+
+  if(Math.abs(scaleW-targetW)<tol && Math.abs(scaleH-targetH)<tol){
+    feedback.innerText = "¡Muy bien! (" + l.type + ")";
+    feedback.style.color = "green";
+
+    setTimeout(()=>{
+      level++;
+      if(level < levels.length){
+        loadLevel();
+      } else {
+        title.innerText = "🎉 ¡Completado!";
+        feedback.innerText = "";
+      }
+    },1000);
+
+  } else if(Math.abs(scaleW-targetW)<tol || Math.abs(scaleH-targetH)<tol){
+    feedback.innerText = "Solo has cambiado un lado";
+    feedback.style.color = "orange";
+  } else {
+    feedback.innerText = "No es correcto";
+    feedback.style.color = "red";
+  }
+}
+
+function reset(){
+  loadLevel();
+}
+
+loadLevel();
+
+</script>
+
+</body>
+</html>
